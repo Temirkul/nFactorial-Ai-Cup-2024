@@ -3,7 +3,6 @@ import random
 import requests
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
-from langchain.output_parsers import PydanticOutputParser
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from PIL import Image
@@ -94,7 +93,7 @@ def get_generate_image_chain(delimeters="```"):  # this should be an agent ideal
     return chain
 
 
-def generate_image(prompt: str) -> Image.Image | None:
+def generate_image(prompt: str) -> BytesIO | None:
     engine_id = "stable-diffusion-xl-1024-v1-0"
     api_host = os.getenv("API_HOST", "https://api.stability.ai")
     api_key = os.getenv("STABILITY_API_KEY")
@@ -125,8 +124,9 @@ def generate_image(prompt: str) -> Image.Image | None:
     
     if response.status_code == 200:
         image_data = response.content
-        image = Image.open(BytesIO(image_data))  # ! 
-        return image
+        image_byte_arr = BytesIO(image_data)  # !
+        image_byte_arr.seek(0)
+        return image_byte_arr
     else:
         print(f"Error: {response.status_code} - {response.text}")
         return None
@@ -145,12 +145,12 @@ if __name__ == "__main__":
     ])
     start_story_result = get_start_story_chain().invoke(theme)
     start_story_image_prompt = get_generate_image_chain().invoke(start_story_result)
-    start_story_image = generate_image(start_story_image_prompt)
+    start_story_image = Image.open(generate_image(start_story_image_prompt))
     start_story_image.save("generated_image_1.png")
 
     continue_story_result = get_continue_story_chain(story_context=start_story_result).invoke("I want to smoke.")
     continue_story_image_prompt = get_generate_image_chain().invoke(continue_story_result)
-    continue_story_image = generate_image(continue_story_image_prompt)
+    continue_story_image = Image.open(generate_image(continue_story_image_prompt))
     continue_story_image.save("generated_image_2.png")
     
     test_prompt = ChatPromptTemplate.from_template("test prompt {input}")

@@ -2,6 +2,8 @@ import random
 from typing import Any
 from PIL import Image
 from fastapi import APIRouter, Depends
+from typing import Union
+from starlette.responses import StreamingResponse
 from .schemas import StoryResponse, StoryInput
 from .genai import get_start_story_chain, get_continue_story_chain, get_generate_image_chain, generate_image
 
@@ -39,8 +41,12 @@ async def continue_story(story_input: StoryInput) -> StoryResponse:
 
 
 @router.get("/generate-image-pipeline", response_model=Any)  # pydantic/fastapi don't work well with PIL Image for some reason
-async def generate_image_pipeline(story_at_current_timestep: str) -> Image.Image | None:
+async def generate_image_pipeline(story_at_current_timestep: str) -> StreamingResponse | None:
     generate_image_chain = get_generate_image_chain()
     image_prompt = await generate_image_chain.ainvoke(story_at_current_timestep)
-    image = generate_image(image_prompt)
-    return image
+    image_byte_arr = generate_image(image_prompt)
+    try:
+        return StreamingResponse(image_byte_arr, media_type="image/png") 
+    except Exception as e:
+        print("Exception:", e)
+        return None
