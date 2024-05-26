@@ -3,10 +3,9 @@ import axios from 'axios';
 import './App.css';
 
 function App() {
-    const [story, setStory] = useState('');  // Stores the entire story text
-    const [input, setInput] = useState('');  // User input for continuing the story
-    const [image, setImage] = useState(null); // For background image
-    const [chatVisible, setChatVisible] = useState(true); // Controls chat window visibility
+    const [story, setStory] = useState([]);  // State now holds an array of story parts
+    const [input, setInput] = useState('');
+    const [chatVisible, setChatVisible] = useState(true);
 
     useEffect(() => {
         startStory();
@@ -17,37 +16,37 @@ function App() {
     const startStory = async () => {
         try {
             const response = await axios.post('http://localhost:8000/start-story');
-            setStory(response.data.story_text);
-            console.log("Initial story fetched:", response.data.story_text);
+            setStory([response.data.story_text]);  // Initialize story with the first part as an array
         } catch (error) {
             console.error('Failed to start story:', error.response ? error.response.data : error.message);
         }
     };
 
     const continueStory = async () => {
-        if (!input.trim()) return;
+        if (!input.trim()) return; // Avoid adding empty inputs
         try {
             const response = await axios.post('http://localhost:8000/continue-story', {
-                story_context: story,
+                story_context: story.join("\n"),  // Join array elements with newline for the backend
                 user_input: input
             });
-            setStory(prev => prev + "\n" + response.data.story_text);
+            setStory(prevStory => [...prevStory, response.data.story_text]);  // Append new story part to array
             setInput('');
-            console.log("Story continued:", response.data.story_text);
         } catch (error) {
             console.error('Failed to continue story:', error.response ? error.response.data : error.message);
         }
     };
 
     return (
-        <div className="app" style={{ backgroundImage: `url(${image})` }}>
-            <div className="story-display">
-                {story || "Loading story..."}
-            </div>
-            <div className="chat-interface"
+        <div className="app">
+            <div className="chat-window"
                 onMouseEnter={() => setChatVisible(true)}
                 onMouseLeave={() => setChatVisible(false)}
-                style={{ opacity: chatVisible ? 1 : 0, transition: 'opacity 0.5s' }}>
+                style={{ opacity: chatVisible ? 1 : 0, transition: 'opacity 0.5s ease-in-out' }}>
+                <div className="story-display">
+                    {story.length === 0 ? "Loading story..." : story.map((paragraph, index) => (
+                        <p key={index}>{paragraph}</p> // Render each story part as a separate paragraph
+                    ))}
+                </div>
                 <textarea
                     value={input}
                     onChange={e => setInput(e.target.value)}
