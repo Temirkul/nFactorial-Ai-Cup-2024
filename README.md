@@ -1,11 +1,10 @@
 # nFactorial-Ai-Cup-2024
-Fork this repository and build nFactorial Ai Cup 2024 projects 
 
 ## Temirkul Umetaliev
 
 ## Monogatari
 
-## < Your App's description, technical considerations, etc. >
+## An immersive AI storytelling experience. Uses diffusion models and LLMs to generate the story. LangChain was used for LLMs, fastapi for the backend APIs.
 
 
 ## Typeform to submit:

@@ -5,7 +5,7 @@ import './App.css';
 function App() {
     const [story, setStory] = useState([]);
     const [input, setInput] = useState('');
-    const [image, setImage] = useState('');
+    const [image, setImage] = useState('');  // Initialize image state with an empty string
     const [chatVisible, setChatVisible] = useState(true);
 
     useEffect(() => {
@@ -37,12 +37,11 @@ function App() {
         }
     };
 
-    // Function to fetch and update the image based on the story text
     const updateImage = async (storyText) => {
         try {
             const response = await axios.get(`http://localhost:8000/generate-image-pipeline`, {
                 params: { story_at_current_timestep: storyText },
-                responseType: 'blob'  // Important: Handle the response as a Blob
+                responseType: 'blob'  // Treat the response as a Blob
             });
             const imageUrl = URL.createObjectURL(response.data);  // Create a URL from the Blob
             setImage(imageUrl);  // Update state to reflect the new image URL
@@ -52,7 +51,14 @@ function App() {
     };
 
     return (
-        <div className="app" style={{ backgroundImage: `url(${image})` }}>
+        <div className="app" style={{
+            backgroundImage: `url(${image})`,
+            backgroundSize: 'cover',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center',
+            width: '100vw',  // Covers the full viewport width
+            height: '100vh'  // Covers the full viewport height
+        }}>
             <div className="chat-window"
                 onMouseEnter={() => setChatVisible(true)}
                 onMouseLeave={() => setChatVisible(false)}
