@@ -3,7 +3,7 @@ Fork this repository and build nFactorial Ai Cup 2024 projects
 
 ## Temirkul Umetaliev
 
-## < Your App's Name >
+## Monogatari
 
 ## < Your App's description, technical considerations, etc. >
 

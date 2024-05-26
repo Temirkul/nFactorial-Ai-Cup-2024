@@ -1,7 +1,8 @@
 import random
+from PIL import Image
 from fastapi import APIRouter, Depends
 from .schemas import StoryResponse, StoryInput
-from .genai import get_start_story_chain, get_continue_story_chain
+from .genai import get_start_story_chain, get_continue_story_chain, get_generate_image_chain, generate_image
 
 router = APIRouter()
 
@@ -36,6 +37,9 @@ async def continue_story(story_input: StoryInput) -> StoryResponse:
     return StoryResponse(story_text=response)
 
 
-@router.get("/generate-image")
-async def generate_image(context):  # not sure about this for now. Do i need a response model? 
-    pass 
+@router.get("/generate-image-pipeline")
+async def generate_image_pipeline(story_at_current_timestep: str) -> Image.Image:
+    generate_image_chain = get_generate_image_chain()
+    image_prompt = await generate_image_chain.ainvoke(story_at_current_timestep)
+    image = generate_image(image_prompt)
+    return image
